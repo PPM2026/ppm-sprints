@@ -1,2 +1,4 @@
-// PPM Sprint & Code - Main entry point
-console.log('PPM Sprint & Code loaded')
+import { authGuard } from './lib/auth.js'
+import { initApp } from './app.js'
+
+authGuard(initApp, document.getElementById('app'), 'Sprint & Code')
