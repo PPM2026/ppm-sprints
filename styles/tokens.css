@@ -1,0 +1,20 @@
+/* PPM Design Tokens */
+:root {
+  --primary: #161F45;
+  --accent: #CCB79E;
+  --success: #34C759;
+  --warning: #FF9500;
+  --error: #FF3B30;
+  --info: #3B82F6;
+  --bg: #F5F5F4;
+  --surface: #FFFFFF;
+  --text: #1C1C1E;
+  --text-secondary: rgba(0,0,0,0.6);
+  --text-tertiary: rgba(0,0,0,0.4);
+  --border: rgba(0,0,0,0.06);
+  --border-strong: rgba(0,0,0,0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--bg); }
+#app { height: 100%; }
