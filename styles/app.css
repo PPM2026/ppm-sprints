@@ -1367,31 +1367,244 @@
 .dark-mode .idea-driving-btn { color: rgba(255,255,255,0.35); }
 .dark-mode .idea-driving-btn:hover { color: #FFF; background: rgba(255,255,255,0.06); }
 
-/* ===== RESPONSIVE ===== */
+/* ===== MOBILE HAMBURGER & BACKDROP (hidden on desktop) ===== */
+.mobile-hamburger {
+  display: none; /* hidden on desktop */
+  align-items: center; justify-content: center;
+  width: 36px; height: 36px; border-radius: 8px;
+  background: none; border: none; cursor: pointer;
+  color: #161F45; font-size: 22px; padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+.mobile-backdrop {
+  display: none; position: fixed; inset: 0; z-index: 90;
+  background: rgba(0,0,0,0.4); opacity: 0;
+  transition: opacity 0.25s ease;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+}
+.mobile-backdrop.active { opacity: 1; }
+
+/* ===== RESPONSIVE — MOBILE (≤768px) ===== */
 @media (max-width: 768px) {
-  .ideeen-dashboard { grid-template-columns: 1fr; grid-template-rows: 48px auto 1fr; }
-  .ideeen-sidebar {
-    flex-direction: row; overflow-x: auto; padding: 8px 12px; gap: 2px;
-    border-right: none; border-bottom: 1px solid rgba(0,0,0,0.06);
+
+  /* --- Layout: single column, no sidebar in grid --- */
+  .ideeen-dashboard {
+    grid-template-columns: 1fr;
+    grid-template-rows: 52px 1fr; /* taller topbar, no sidebar row */
+    height: 100vh;
+    height: 100dvh; /* dynamic viewport for mobile browsers */
   }
-  .ideeen-sidebar .side-item { white-space: nowrap; padding: 6px 10px; font-size: 11px; }
-  .admin-kpis { grid-template-columns: repeat(2, 1fr); }
-  .sd-kpis { grid-template-columns: repeat(2, 1fr); }
+
+  /* --- Topbar: hamburger visible, compact --- */
+  .ideeen-topbar {
+    padding: 0 12px; gap: 8px;
+    height: 52px;
+    padding-top: env(safe-area-inset-top); /* notch support */
+  }
+  .mobile-hamburger { display: flex; }
+  .ideeen-topbar .topbar-product { font-size: 13px; }
+  .ideeen-topbar .topbar-ppm { font-size: 15px; }
+  .ideeen-topbar .topbar-btn { padding: 6px 8px; font-size: 10px; }
+  .ideeen-topbar .topbar-btn ion-icon { font-size: 16px; }
+
+  /* --- Sidebar: overlay slide-in from left --- */
+  .ideeen-sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    width: 280px;
+    max-width: 80vw;
+    z-index: 100;
+    flex-direction: column;
+    padding: 20px 16px;
+    padding-top: calc(env(safe-area-inset-top) + 20px);
+    gap: 2px;
+    border-right: 1px solid rgba(0,0,0,0.08);
+    box-shadow: 4px 0 24px rgba(0,0,0,0.12);
+    overflow-y: auto;
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+    will-change: transform;
+  }
+  .ideeen-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  .mobile-backdrop { display: block; pointer-events: none; }
+  .mobile-backdrop.active { pointer-events: auto; }
+
+  /* Larger touch targets in sidebar */
+  .ideeen-sidebar .side-item {
+    padding: 14px 16px;
+    font-size: 15px;
+    border-radius: 12px;
+    min-height: 44px; /* Apple HIG minimum */
+    gap: 12px;
+  }
+  .ideeen-sidebar .side-item ion-icon { font-size: 20px; }
+  .ideeen-sidebar .side-separator {
+    font-size: 10px; padding: 16px 16px 6px;
+    margin-top: 8px;
+  }
+
+  /* --- Main content: full width, adjusted padding --- */
+  .ideeen-main {
+    padding: 16px;
+    padding-bottom: calc(env(safe-area-inset-bottom) + 16px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .ideeen-main .main-title { font-size: 18px; }
+  .ideeen-main .view-title { font-size: 18px; }
+  .ideeen-main .main-header { margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+
+  /* --- KPIs: 2 columns on mobile --- */
+  .admin-kpis { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .admin-kpi { padding: 12px; }
+  .admin-kpi .kpi-value { font-size: 20px; }
+
+  /* --- Sprint grid & cards --- */
+  .sprints-grid { grid-template-columns: 1fr !important; gap: 10px; }
+
+  /* --- Sprint detail --- */
+  .sd-kpis { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .sd-grid { grid-template-columns: 1fr; }
   .sd-col-side { order: -1; }
-  .ideeen-stats { grid-template-columns: repeat(2, 1fr); }
-  .ideeen-grid { padding: 0 16px 16px; }
-  .sprints-grid { grid-template-columns: 1fr; }
   .bd-grid { grid-template-columns: 1fr; }
   .bd-sidebar { order: -1; }
-  .bd-tabs { overflow-x: auto; }
-  .bd-tab { white-space: nowrap; }
-  .ideeen-main { padding: 16px; }
-  .main-header { margin-bottom: 12px; }
-  .id-attachments-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
-  .id-chat-container { height: calc(100vh - 200px); min-height: 250px; }
-  .chat-bubble { max-width: 90%; }
-  .chat-input-bar { padding: 8px; }
-  .chat-welcome { padding: 20px; }
+  .bd-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .bd-tab {
+    white-space: nowrap;
+    padding: 10px 16px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+
+  /* --- Ideeën grid --- */
+  .ideeen-stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .ideeen-grid { padding: 0; gap: 10px; }
+  .ideeen-card { border-radius: 12px; }
+
+  /* --- Idee detail --- */
+  .id-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .id-tab {
+    white-space: nowrap;
+    padding: 10px 14px;
+    font-size: 13px;
+    min-height: 44px;
+  }
+  .id-attachments-grid { grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; }
+
+  /* --- Chat panel --- */
+  .id-chat-container { height: calc(100dvh - 220px); min-height: 250px; }
   .chat-messages { padding: 12px; }
+  .chat-bubble { max-width: 92%; font-size: 14px; padding: 12px 14px; }
+  .chat-input-bar { padding: 8px 12px; gap: 8px; }
+  .chat-input-bar input,
+  .chat-input-bar textarea {
+    font-size: 16px !important; /* prevents iOS zoom on focus */
+    min-height: 44px;
+  }
+  .chat-input-bar button {
+    min-width: 44px; min-height: 44px;
+    border-radius: 10px;
+  }
+  .chat-welcome { padding: 20px; }
+  .chat-welcome h3 { font-size: 16px; }
+
+  /* --- Code terminal --- */
+  .code-sessions-grid { grid-template-columns: 1fr !important; }
+  .code-terminal { font-size: 12px; }
+  .code-toolbar { flex-wrap: wrap; gap: 6px; }
+  .code-toolbar .topbar-btn {
+    padding: 8px 12px;
+    min-height: 44px;
+    font-size: 12px;
+  }
+
+  /* --- Dashboard cards --- */
+  .dash-grid { grid-template-columns: 1fr; }
+  .dash-card { border-radius: 12px; }
+  .dash-row { flex-direction: column; gap: 10px; }
+
+  /* --- Buttons: larger touch targets --- */
+  .btn-primary, .btn-secondary, .btn-ghost {
+    min-height: 44px;
+    padding: 12px 16px;
+    font-size: 14px;
+    border-radius: 10px;
+  }
+
+  /* --- Filter bars & action buttons --- */
+  .sprints-filter { flex-wrap: wrap; gap: 8px; }
+  .sprints-filter select,
+  .sprints-filter input {
+    font-size: 14px;
+    min-height: 40px;
+    border-radius: 8px;
+  }
+
+  /* --- Idea capture widget: mobile adjustments --- */
+  .idea-capture-fab { bottom: 20px; right: 16px; width: 52px; height: 52px; }
+  .idea-capture-panel {
+    width: calc(100vw - 24px);
+    right: 12px;
+    bottom: 80px;
+    max-height: calc(100dvh - 120px);
+    border-radius: 16px;
+  }
+
+  /* --- Detail overlays --- */
+  .detail-overlay {
+    padding: 0;
+    align-items: flex-end; /* slide up from bottom on mobile */
+  }
+  .detail-card {
+    border-radius: 16px 16px 0 0;
+    max-height: 95dvh;
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+  }
+
+  /* --- Profile dropdown --- */
+  .profile-dropdown {
+    right: 8px; top: 48px;
+  }
+  .profile-dropdown .dd-item {
+    padding: 12px 14px;
+    font-size: 14px;
+    min-height: 44px;
+  }
+
+  /* --- Section titles --- */
+  .section-title { font-size: 11px; margin-top: 16px; }
+
+  /* --- Empty state --- */
+  .empty-state { padding: 32px 16px; }
+
+  /* --- Pill badges slightly larger --- */
+  .pill-sm { padding: 3px 10px; font-size: 11px; }
+}
+
+/* ===== RESPONSIVE — SMALL PHONES (≤390px) ===== */
+@media (max-width: 390px) {
+  .admin-kpis { grid-template-columns: 1fr; }
+  .ideeen-stats { grid-template-columns: 1fr; }
+  .ideeen-main { padding: 12px; }
+  .ideeen-topbar .topbar-actions { gap: 2px; }
+  .ideeen-topbar .topbar-btn#btn-darkmode { display: none; } /* hide on very small */
+  .idea-capture-panel { width: calc(100vw - 16px); right: 8px; }
+}
+
+/* ===== DARK MODE + MOBILE ===== */
+@media (max-width: 768px) {
+  .dark-mode .mobile-hamburger { color: #FFF; }
+  .dark-mode .mobile-backdrop { background: rgba(0,0,0,0.6); }
+  .dark-mode .ideeen-sidebar {
+    box-shadow: 4px 0 24px rgba(0,0,0,0.4);
+  }
+  .dark-mode .detail-card {
+    border-radius: 16px 16px 0 0;
+  }
 }

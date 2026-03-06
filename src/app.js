@@ -67,6 +67,9 @@ export function initApp(session) {
   // Init idea capture widget (floating bulb button)
   initIdeaCapture(document.getElementById('ideeen-db'))
 
+  // === MOBILE: Hamburger menu ===
+  initMobileMenu()
+
   // Render initial view
   loadView('dashboard')
   trackView('dashboard')
@@ -122,15 +125,91 @@ function switchView(view, param) {
 // Public navigation for child views
 window.__ppmSwitchView = switchView
 
+// === MOBILE MENU ===
+
+function initMobileMenu() {
+  const topbar = document.querySelector('.ideeen-topbar')
+  if (!topbar) return
+
+  // Insert hamburger button at the start of topbar
+  const hamburger = document.createElement('button')
+  hamburger.className = 'mobile-hamburger'
+  hamburger.id = 'btn-hamburger'
+  hamburger.innerHTML = '<ion-icon name="menu-outline"></ion-icon>'
+  hamburger.setAttribute('aria-label', 'Menu')
+  topbar.insertBefore(hamburger, topbar.firstChild)
+
+  // Create backdrop overlay
+  const root = document.getElementById('ideeen-db')
+  const backdrop = document.createElement('div')
+  backdrop.className = 'mobile-backdrop'
+  backdrop.id = 'mobile-backdrop'
+  root.appendChild(backdrop)
+
+  // Backdrop click closes sidebar
+  backdrop.addEventListener('click', closeMobileSidebar)
+
+  // Swipe to close
+  let touchStartX = 0
+  const sidebar = document.getElementById('ideeen-sidebar')
+  if (sidebar) {
+    sidebar.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX
+    }, { passive: true })
+    sidebar.addEventListener('touchend', (e) => {
+      const diff = touchStartX - e.changedTouches[0].clientX
+      if (diff > 60) closeMobileSidebar() // swipe left = close
+    }, { passive: true })
+  }
+}
+
+function toggleMobileSidebar() {
+  const sidebar = document.getElementById('ideeen-sidebar')
+  const backdrop = document.getElementById('mobile-backdrop')
+  const hamburger = document.getElementById('btn-hamburger')
+  if (!sidebar) return
+
+  const isOpen = sidebar.classList.contains('mobile-open')
+  if (isOpen) {
+    closeMobileSidebar()
+  } else {
+    sidebar.classList.add('mobile-open')
+    if (backdrop) backdrop.classList.add('active')
+    if (hamburger) {
+      const icon = hamburger.querySelector('ion-icon')
+      if (icon) icon.setAttribute('name', 'close-outline')
+    }
+  }
+}
+
+function closeMobileSidebar() {
+  const sidebar = document.getElementById('ideeen-sidebar')
+  const backdrop = document.getElementById('mobile-backdrop')
+  const hamburger = document.getElementById('btn-hamburger')
+  if (sidebar) sidebar.classList.remove('mobile-open')
+  if (backdrop) backdrop.classList.remove('active')
+  if (hamburger) {
+    const icon = hamburger.querySelector('ion-icon')
+    if (icon) icon.setAttribute('name', 'menu-outline')
+  }
+}
+
 // === EVENT HANDLER ===
 
 function handleClick(e) {
   if (handleShellClick(e, 'ideeen-db')) return
 
+  // Hamburger menu toggle
+  if (e.target.closest('#btn-hamburger')) {
+    toggleMobileSidebar()
+    return
+  }
+
   // Sidebar navigation
   const side = e.target.closest('#ideeen-sidebar .side-item')
   if (side && side.dataset.view) {
     switchView(side.dataset.view)
+    closeMobileSidebar() // Close on mobile after selecting
     return
   }
 }
