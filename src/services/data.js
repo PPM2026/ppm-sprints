@@ -27,6 +27,34 @@ export async function fetchProfiles() {
   return cachedProfiles
 }
 
+export async function fetchPlatforms() {
+  try {
+    const { data, error } = await supabase
+      .from('page_views')
+      .select('platform')
+    if (error) throw error
+    const unique = [...new Set((data || []).map(d => d.platform?.trim()).filter(Boolean))]
+    unique.sort()
+    const labelMap = {
+      assetmanagement: 'Assetmanagement',
+      projectontwikkeling: 'Projectontwikkeling',
+      acquisitie: 'Acquisitie',
+      meta: 'Meta Dashboard'
+    }
+    return unique.map(p => ({
+      key: p,
+      label: labelMap[p] || p.charAt(0).toUpperCase() + p.slice(1)
+    }))
+  } catch (e) {
+    console.warn('PPM: Could not fetch platforms', e)
+    return [
+      { key: 'assetmanagement', label: 'Assetmanagement' },
+      { key: 'projectontwikkeling', label: 'Projectontwikkeling' },
+      { key: 'acquisitie', label: 'Acquisitie' }
+    ]
+  }
+}
+
 // === HELPERS ===
 
 export function getUserName(userId, profiles) {

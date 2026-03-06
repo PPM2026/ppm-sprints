@@ -1,17 +1,20 @@
 /**
- * PPM Sprint & Code — Router / Orchestrator
- * Standalone app for sprint management and Claude Code terminal.
- * Views synced with ppm-admin-dashboard via sync-shared.sh.
+ * PPM Ideeën — Router / Orchestrator
+ * Standalone app for ideas, sprint management and Claude Code terminal.
+ * Ideeën views synced with ppm-admin-dashboard via sync-shared.sh.
  */
 import { initFeedbackButton } from './lib/feedback.js'
 import { trackView } from './lib/analytics.js'
 import { renderShell, initShellEvents, handleShellClick } from './lib/ui.js'
+import { initIdeaCapture } from './components/idea-capture.js'
 
 // === SIDEBAR CONFIG ===
 
 const SIDEBAR_ITEMS = [
   { type: 'separator', label: 'Overzicht' },
   { key: 'dashboard', icon: 'grid-outline', label: 'Dashboard', active: true },
+  { type: 'separator', label: 'Ideeën' },
+  { key: 'ideeen', icon: 'bulb-outline', label: 'Alle Ideeën' },
   { type: 'separator', label: 'Sprints' },
   { key: 'sprints', icon: 'flag-outline', label: 'Alle Sprints' },
   { type: 'separator', label: 'Code' },
@@ -22,13 +25,15 @@ const SIDEBAR_ITEMS = [
 
 const viewModules = {
   dashboard:       () => import('./views/dashboard.js'),
+  ideeen:          () => import('./views/ideeen.js'),
+  'idee-detail':   () => import('./views/idee-detail.js'),
   sprints:         () => import('./views/sprints.js'),
   'sprint-detail': () => import('./views/sprint-detail.js'),
   code:            () => import('./views/code.js'),
 }
 
 // All possible view keys (for show/hide)
-const ALL_VIEW_KEYS = ['dashboard', 'sprints', 'sprint-detail', 'code']
+const ALL_VIEW_KEYS = ['dashboard', 'ideeen', 'idee-detail', 'sprints', 'sprint-detail', 'code']
 
 let currentView = 'dashboard'
 function getCurrentView() { return currentView }
@@ -44,26 +49,29 @@ export function initApp(session) {
   ).join('\n      ')
 
   app.innerHTML = renderShell({
-    platformName: 'Sprint & Code',
-    rootId: 'sprints-db',
-    rootClass: 'sprints-dashboard',
-    topbarClass: 'sprints-topbar',
-    sidebarId: 'sprints-sidebar',
-    sidebarClass: 'sprints-sidebar',
-    mainId: 'sprints-main',
-    mainClass: 'sprints-main',
+    platformName: 'Ideeën',
+    rootId: 'ideeen-db',
+    rootClass: 'ideeen-dashboard',
+    topbarClass: 'ideeen-topbar',
+    sidebarId: 'ideeen-sidebar',
+    sidebarClass: 'ideeen-sidebar',
+    mainId: 'ideeen-main',
+    mainClass: 'ideeen-main',
     sidebarItems: SIDEBAR_ITEMS,
     mainContent: viewDivs
   })
 
-  initShellEvents({ rootId: 'sprints-db', session })
+  initShellEvents({ rootId: 'ideeen-db', session })
   initFeedbackButton(document.body, getCurrentView)
+
+  // Init idea capture widget (floating bulb button)
+  initIdeaCapture(document.getElementById('ideeen-db'))
 
   // Render initial view
   loadView('dashboard')
   trackView('dashboard')
 
-  document.getElementById('sprints-db').addEventListener('click', handleClick)
+  document.getElementById('ideeen-db').addEventListener('click', handleClick)
 }
 
 // === NAVIGATION ===
@@ -99,9 +107,12 @@ function switchView(view, param) {
   // Load view content
   loadView(view, param)
 
-  // Update sidebar active state (sprint-detail highlights sprints)
-  const sidebarKey = view === 'sprint-detail' ? 'sprints' : view
-  document.querySelectorAll('#sprints-sidebar .side-item').forEach(s => {
+  // Update sidebar active state (detail views highlight their parent)
+  let sidebarKey = view
+  if (view === 'sprint-detail') sidebarKey = 'sprints'
+  if (view === 'idee-detail') sidebarKey = 'ideeen'
+
+  document.querySelectorAll('#ideeen-sidebar .side-item').forEach(s => {
     s.classList.toggle('active', s.dataset.view === sidebarKey)
   })
 
@@ -114,10 +125,10 @@ window.__ppmSwitchView = switchView
 // === EVENT HANDLER ===
 
 function handleClick(e) {
-  if (handleShellClick(e, 'sprints-db')) return
+  if (handleShellClick(e, 'ideeen-db')) return
 
   // Sidebar navigation
-  const side = e.target.closest('#sprints-sidebar .side-item')
+  const side = e.target.closest('#ideeen-sidebar .side-item')
   if (side && side.dataset.view) {
     switchView(side.dataset.view)
     return

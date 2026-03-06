@@ -1,6 +1,6 @@
-# PPM Sprint & Code
+# PPM Ideeën
 
-Standalone app voor sprint management, Claude Code terminal en development workflow.
+Standalone app voor ideeën management, sprint planning, Claude Code terminal en development workflow.
 
 ## Tech Stack
 - Vite + Vanilla JS (geen React)
@@ -15,7 +15,8 @@ src/
   lib/              → Shared libs (synced via sync-shared.sh)
   views/            → View modules (lazy loaded)
   services/         → Supabase data layer
-  utils/            → Formatters, drag-drop
+  components/       → Reusable components (idea-capture, chat-panel, driving-mode)
+  utils/            → Formatters
 styles/
   tokens.css        → Shared design tokens
   feedback.css      → Shared feedback widget
@@ -38,16 +39,22 @@ Deze bestanden worden gesynchroniseerd met andere PPM repos via `sync-shared.sh`
 - `src/lib/realtime.js`
 - `src/utils/format.js`
 
+## Ideeën-Synced Files (gesynchroniseerd met ppm-admin-dashboard)
+- `src/views/ideeen.js`, `idee-detail.js`
+- `src/services/idea-service.js`, `idea-ai-service.js`
+- `src/components/idea-capture.js`, `chat-panel.js`, `driving-mode.js`
+
 ## App-Eigen Files (NIET syncen)
 - `src/app.js` — eigen router/sidebar
-- `src/views/dashboard.js` — sprint-specifiek dashboard
+- `src/views/dashboard.js` — ideeën-specifiek dashboard
 - `src/services/data.js` — subset van admin
 - `styles/app.css` — eigen styling
 
 ## Supabase
 - Project: `evtgzkdpixwugevchdii` (eu-central-1)
-- Tabellen: sprints, tasks, task_todos, task_comments, sprint_executions, sprint_execution_events, sprint_execution_messages
-- Edge functions: sprint-plan (gedeeld)
+- Tabellen: idea_captures, idea_conversations, conversation_messages, sprints, tasks, task_todos, task_comments, sprint_executions, sprint_execution_events, sprint_execution_messages
+- Storage: idea-attachments, feedback-attachments
+- Edge functions: sprint-plan, idea-analyze, idea-chat
 
 ## Commands
 ```bash
@@ -58,4 +65,4 @@ npm run preview  # Preview build
 
 ## Design System
 Volg Apple HIG principes. Gebruik tokens uit `styles/tokens.css`.
-Dark mode via `.sprints-dashboard.dark-mode` selectors.
+Dark mode via `.ideeen-dashboard.dark-mode` selectors.
