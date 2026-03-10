@@ -357,6 +357,17 @@ export async function sendExecutionMessage(executionId, content) {
 }
 
 /**
+ * Delete an execution and its events/messages.
+ */
+export async function deleteExecution(executionId) {
+  // Delete events and messages first (foreign key)
+  await supabase.from('sprint_execution_events').delete().eq('execution_id', executionId)
+  await supabase.from('sprint_execution_messages').delete().eq('execution_id', executionId)
+  const { error } = await supabase.from('sprint_executions').delete().eq('id', executionId)
+  if (error) throw error
+}
+
+/**
  * Subscribe to execution status changes (for header updates).
  * @returns {function} unsubscribe
  */

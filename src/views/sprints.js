@@ -110,11 +110,12 @@ async function renderSprintsGrid() {
     `
   }).join('')
 
-  // Attach click handlers
-  grid.querySelectorAll('.sc-btn-detail').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation()
-      const id = btn.dataset.sprintId
+  // Attach click handlers — whole card is clickable
+  grid.querySelectorAll('.sprint-card').forEach(card => {
+    card.style.cursor = 'pointer'
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.sc-idea-link')) return
+      const id = card.dataset.sprintId
       window.__ppmSwitchView?.('sprint-detail', id)
     })
   })

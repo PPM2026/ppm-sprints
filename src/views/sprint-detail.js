@@ -481,55 +481,23 @@ function renderSidebarDetails(pct, doneTasks) {
 }
 
 function renderSidebarActions() {
-  const canStart = sprint.claude_code_prompt && (!sprint.execution_status || sprint.execution_status === 'not_started')
-  const isPlanReady = sprint.execution_status === 'plan_ready'
   const isRunning = sprint.execution_status === 'queued' || sprint.execution_status === 'running'
-  const isDone = sprint.execution_status === 'completed' || sprint.execution_status === 'partial' || sprint.execution_status === 'failed'
+  const hasPrompt = !!sprint.claude_code_prompt
 
   return `
     <div class="bd-sidebar-card">
       <div class="bd-sidebar-card-title">Acties</div>
       <div style="display:flex;flex-direction:column;gap:8px;">
-        ${canStart ? `
-          <button class="btn-primary bd-btn-full" id="sd-plan-sprint" style="background:#7C3AED;">
-            <ion-icon name="search-outline"></ion-icon> Plan eerst
-          </button>
-          <button class="btn-primary bd-btn-full" id="sd-start-sprint" style="background:#2563EB;">
-            <ion-icon name="rocket-outline"></ion-icon> Direct uitvoeren (bypass)
-          </button>
-        ` : ''}
-        ${isPlanReady ? `
-          <button class="btn-primary bd-btn-full" id="sd-approve-plan" style="background:#1B7D3A;">
-            <ion-icon name="checkmark-circle-outline"></ion-icon> Plan goedkeuren & uitvoeren
-          </button>
-          <div style="font-size:11px;color:rgba(0,0,0,0.4);text-align:center;">Bekijk het plan in de Claude Code tab</div>
-        ` : ''}
         ${isRunning ? `
           <div class="sd-exec-running-badge">
             <span class="sd-exec-dot running" style="width:8px;height:8px;display:inline-block;"></span>
             Sprint wordt uitgevoerd...
           </div>
-        ` : ''}
-        ${isDone ? `
-          <div class="sd-exec-done-badge ${sprint.execution_status}">
-            ${sprint.execution_status === 'completed' ? '<ion-icon name="checkmark-circle-outline"></ion-icon> Executie voltooid' : ''}
-            ${sprint.execution_status === 'partial' ? '<ion-icon name="alert-circle-outline"></ion-icon> Gedeeltelijk voltooid' : ''}
-            ${sprint.execution_status === 'failed' ? '<ion-icon name="close-circle-outline"></ion-icon> Executie mislukt' : ''}
-          </div>
-        ` : ''}
-        ${sprint.idea_id ? `
-          <button class="btn-secondary bd-btn-full" id="sd-goto-idea">
-            <ion-icon name="bulb-outline"></ion-icon> Bekijk idee
+        ` : `
+          <button class="btn-primary bd-btn-full" id="sd-start-code" ${!hasPrompt ? 'disabled title="Geen Claude Code prompt beschikbaar"' : ''}>
+            <ion-icon name="terminal-outline"></ion-icon> Start in Code
           </button>
-        ` : ''}
-        ${sprint.claude_code_prompt ? `
-          <button class="btn-secondary bd-btn-full" id="sd-copy-prompt-sidebar">
-            <ion-icon name="terminal-outline"></ion-icon> Kopieer Claude Code prompt
-          </button>
-        ` : ''}
-        <button class="btn-secondary bd-btn-full" id="sd-gen-report">
-          <ion-icon name="document-text-outline"></ion-icon> Genereer rapport
-        </button>
+        `}
       </div>
     </div>
   `
@@ -588,85 +556,25 @@ function attachEvents(el, sprintId) {
     if (sprint.idea_id) window.__ppmSwitchView?.('idee-detail', sprint.idea_id)
   })
 
-  // Plan Sprint (read-only analysis first)
-  el.querySelector('#sd-plan-sprint')?.addEventListener('click', async () => {
-    let reportData = {}
-    try { reportData = JSON.parse(sprint.report_html || '{}') } catch { /* ignore */ }
-    const repos = reportData.repos_involved || []
-    if (repos.length === 0) { alert('Geen repositories gevonden.'); return }
-    if (!confirm(`Claude Code analyseren (read-only)?\n\nRepositories:\n${repos.map(r => '  • ' + r).join('\n')}\n\nEr worden geen wijzigingen gemaakt.`)) return
-
-    const btn = el.querySelector('#sd-plan-sprint')
+  // Start in Code (always plan mode)
+  el.querySelector('#sd-start-code')?.addEventListener('click', async () => {
+    const btn = el.querySelector('#sd-start-code')
     btn.disabled = true
-    btn.innerHTML = '<ion-icon name="hourglass-outline"></ion-icon> Plannen...'
+    btn.innerHTML = '<ion-icon name="hourglass-outline"></ion-icon> Starten...'
     try {
       await planSprint(sprint.id)
       sprint.execution_status = 'queued'
       executionsData = await fetchSprintExecutions(sprint.id)
-      // Navigate to code environment for first execution
       if (executionsData.length > 0) {
         window.__ppmSwitchView('code', executionsData[0].id)
       } else {
         renderPage(el, sprintId)
       }
     } catch (err) {
-      console.warn('PPM: plan sprint failed', err)
-      alert('Plannen mislukt: ' + (err.message || 'Onbekende fout'))
-      btn.disabled = false
-      btn.innerHTML = '<ion-icon name="search-outline"></ion-icon> Plan eerst'
-    }
-  })
-
-  // Start Sprint execution (direct bypass)
-  el.querySelector('#sd-start-sprint')?.addEventListener('click', async () => {
-    let reportData = {}
-    try { reportData = JSON.parse(sprint.report_html || '{}') } catch { /* ignore */ }
-    const repos = reportData.repos_involved || []
-    if (repos.length === 0) { alert('Geen repositories gevonden.'); return }
-    if (!confirm(`Direct uitvoeren op Mac Mini?\n\nRepositories:\n${repos.map(r => '  • ' + r).join('\n')}\n\nClaude Code draait in bypass modus (geen plan stap).`)) return
-
-    const btn = el.querySelector('#sd-start-sprint')
-    btn.disabled = true
-    btn.innerHTML = '<ion-icon name="hourglass-outline"></ion-icon> Starten...'
-    try {
-      await executeSprint(sprint.id)
-      sprint.execution_status = 'queued'
-      executionsData = await fetchSprintExecutions(sprint.id)
-      // Navigate to code environment for first execution
-      if (executionsData.length > 0) {
-        window.__ppmSwitchView('code', executionsData[0].id)
-      } else {
-        renderPage(el, sprintId)
-      }
-    } catch (err) {
-      console.warn('PPM: sprint execution failed', err)
+      console.warn('PPM: start in code failed', err)
       alert('Starten mislukt: ' + (err.message || 'Onbekende fout'))
       btn.disabled = false
-      btn.innerHTML = '<ion-icon name="rocket-outline"></ion-icon> Direct uitvoeren (bypass)'
-    }
-  })
-
-  // Approve plan and execute (sidebar button)
-  el.querySelector('#sd-approve-plan')?.addEventListener('click', () => handleApprovePlan(el, sprintId))
-
-  // Copy Claude Code prompt (sidebar)
-  el.querySelector('#sd-copy-prompt-sidebar')?.addEventListener('click', () => copyPromptToClipboard(el))
-
-  // Generate report
-  el.querySelector('#sd-gen-report')?.addEventListener('click', async () => {
-    const btn = el.querySelector('#sd-gen-report')
-    btn.disabled = true
-    btn.innerHTML = '<ion-icon name="hourglass-outline"></ion-icon> Bezig...'
-    try {
-      await generateSprintReport(sprintId)
-      // Reload sprint to get updated report_html
-      const { data } = await supabase.from('sprints').select('*').eq('id', sprintId).single()
-      if (data) sprint = data
-      renderPage(el, sprintId)
-    } catch (err) {
-      console.warn('PPM: report generation failed', err)
-      btn.disabled = false
-      btn.innerHTML = '<ion-icon name="document-text-outline"></ion-icon> Genereer rapport'
+      btn.innerHTML = '<ion-icon name="terminal-outline"></ion-icon> Start in Code'
     }
   })
 

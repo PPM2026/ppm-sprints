@@ -6,7 +6,9 @@ export const PLATFORMS = [
   { key: 'assetmanagement', name: 'Assetmanagement', url: 'https://ppm-assetmanagement.vercel.app', github: 'https://github.com/PPM2026/ppm-assetmanagement' },
   { key: 'projectontwikkeling', name: 'Projectontwikkeling', url: 'https://ppm-projectontwikkeling.vercel.app', github: 'https://github.com/PPM2026/ppm-projectontwikkeling' },
   { key: 'acquisitie', name: 'Acquisitie', url: 'https://ppm-acquisitie.vercel.app', github: 'https://github.com/PPM2026/ppm-acquisitie' },
-  { key: 'meta', name: 'Admin Dashboard', url: 'https://ppm-admin-dashboard.vercel.app', github: 'https://github.com/PPM2026/ppm-admin-dashboard' }
+  { key: 'meta', name: 'Admin Dashboard', url: 'https://ppm-admin-dashboard.vercel.app', github: 'https://github.com/PPM2026/ppm-admin-dashboard' },
+  { key: 'zorgtool', name: 'Zorgtool', url: 'https://ppm-zorgtool.vercel.app', github: 'https://github.com/PPM2026/ppm-zorgtool' },
+  { key: 'team', name: 'Team Dashboard', url: 'https://ppm-team-dashboard.vercel.app', github: 'https://github.com/PPM2026/ppm-team-dashboard' }
 ]
 
 export function formatDate(dateStr) {
