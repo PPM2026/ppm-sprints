@@ -1,8 +1,9 @@
 import { signOut, getProfile } from './auth.js'
+import { renderPlatformSwitcher, initPlatformSwitcher, handlePlatformSwitcherClick } from './platform-nav.js'
 
 /**
  * Shared UI module — topbar, profile dropdown, dark mode, sidebar shell.
- * Used identically across all 4 PPM platforms.
+ * Used identically across all PPM platforms.
  * Sync via: /Users/davidoudega/Documents/PPM-Platform/sync-shared.sh
  */
 
@@ -52,6 +53,8 @@ export function renderShell(config) {
     ? `<span class="topbar-btn" id="btn-export"><ion-icon name="download-outline"></ion-icon> Exporteer</span>`
     : ''
 
+  const platformSwitcherHtml = renderPlatformSwitcher(config.currentPlatform)
+
   return `
     <div class="${rootClass}" id="${rootId}">
       <div class="${topbarClass}">
@@ -62,6 +65,7 @@ export function renderShell(config) {
         ${topbarExtra}
         <div class="topbar-actions">
           ${exportBtn}
+          ${platformSwitcherHtml}
           <span class="topbar-btn" id="btn-profile"><ion-icon name="person-outline"></ion-icon> <span id="btn-profile-name">...</span></span>
           <span class="topbar-btn" id="btn-darkmode"><ion-icon name="moon-outline"></ion-icon></span>
         </div>
@@ -86,9 +90,10 @@ export function renderShell(config) {
  * Call once after renderShell().
  */
 export function initShellEvents(config) {
-  const { rootId, session } = config
+  const { rootId, session, currentPlatform } = config
 
   loadProfileName(session)
+  initPlatformSwitcher(currentPlatform)
 
   if (localStorage.getItem('ppm-darkmode') === '1') {
     const root = document.getElementById(rootId)
@@ -103,6 +108,8 @@ export function initShellEvents(config) {
  * Call from your app's click handler. Returns true if event was consumed.
  */
 export function handleShellClick(e, rootId) {
+  if (handlePlatformSwitcherClick(e)) return true
+
   if (e.target.closest('#btn-darkmode')) {
     const db = document.getElementById(rootId)
     db.classList.toggle('dark-mode')

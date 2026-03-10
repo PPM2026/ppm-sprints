@@ -50,6 +50,7 @@ export function initApp(session) {
 
   app.innerHTML = renderShell({
     platformName: 'Ideeën',
+    currentPlatform: 'ideeen',
     rootId: 'ideeen-db',
     rootClass: 'ideeen-dashboard',
     topbarClass: 'ideeen-topbar',
@@ -61,7 +62,7 @@ export function initApp(session) {
     mainContent: viewDivs
   })
 
-  initShellEvents({ rootId: 'ideeen-db', session })
+  initShellEvents({ rootId: 'ideeen-db', session, currentPlatform: 'ideeen' })
   initFeedbackButton(document.body, getCurrentView)
 
   // Init idea capture widget (floating bulb button)
