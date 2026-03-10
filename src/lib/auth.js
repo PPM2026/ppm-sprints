@@ -1,5 +1,43 @@
 import { supabase } from './supabase.js'
 
+/**
+ * Check for token relay from platform switcher.
+ * When switching between PPM dashboards, tokens are passed via URL hash.
+ * This function reads them, sets the session, and clears the hash.
+ */
+export async function checkTokenRelay() {
+  const hash = window.location.hash
+  if (!hash || !hash.includes('ppm_at=')) return false
+
+  try {
+    const params = new URLSearchParams(hash.substring(1))
+    const accessToken = params.get('ppm_at')
+    const refreshToken = params.get('ppm_rt')
+
+    if (!accessToken || !refreshToken) return false
+
+    // Clear hash immediately (before async work)
+    history.replaceState(null, '', window.location.pathname + window.location.search)
+
+    const { error } = await supabase.auth.setSession({
+      access_token: decodeURIComponent(accessToken),
+      refresh_token: decodeURIComponent(refreshToken)
+    })
+
+    if (error) {
+      console.error('PPM: Token relay failed', error)
+      return false
+    }
+
+    return true
+  } catch (err) {
+    console.error('PPM: Token relay error', err)
+    // Clear hash on error too
+    history.replaceState(null, '', window.location.pathname + window.location.search)
+    return false
+  }
+}
+
 export async function getSession() {
   const { data: { session } } = await supabase.auth.getSession()
   return session
@@ -38,6 +76,9 @@ export function onAuthStateChange(callback) {
 }
 
 export async function authGuard(initApp, container, platformName) {
+  // Check for token relay from platform switcher first
+  await checkTokenRelay()
+
   const session = await getSession()
   if (session) {
     initApp(session)
