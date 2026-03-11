@@ -15,7 +15,8 @@ const PLATFORM_CONFIG = {
   acquisitie:          { label: 'Acquisitie',            icon: 'trending-up-outline', url: 'https://ppm-acquisitie.vercel.app' },
   team:                { label: 'Team Dashboard',        icon: 'people-outline',     url: 'https://ppm-team-dashboard.vercel.app' },
   meta:                { label: 'Admin Dashboard',       icon: 'shield-outline',     url: 'https://ppm-admin-dashboard.vercel.app' },
-  ideeen:              { label: 'Ideeën',                icon: 'bulb-outline',       url: 'https://ppm-ideeen.vercel.app' }
+  ideeen:              { label: 'Ideeën',                icon: 'bulb-outline',       url: 'https://ppm-ideeen.vercel.app' },
+  zorgplatform:        { label: 'Zorgplatform',          icon: 'heart-outline',      url: 'https://ppm-zorgplatform.vercel.app' }
 }
 
 let _cachedAccess = null
