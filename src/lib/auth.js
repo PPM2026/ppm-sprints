@@ -19,9 +19,10 @@ export async function checkTokenRelay() {
     // Clear hash immediately (before async work)
     history.replaceState(null, '', window.location.pathname + window.location.search)
 
+    // URLSearchParams already decodes values, no need for decodeURIComponent
     const { error } = await supabase.auth.setSession({
-      access_token: decodeURIComponent(accessToken),
-      refresh_token: decodeURIComponent(refreshToken)
+      access_token: accessToken,
+      refresh_token: refreshToken
     })
 
     if (error) {
