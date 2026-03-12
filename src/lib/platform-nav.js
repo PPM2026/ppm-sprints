@@ -72,16 +72,19 @@ export async function initPlatformSwitcher(currentPlatform) {
   // Sort by canonical order
   const sorted = PLATFORM_ORDER.filter(p => platforms.includes(p))
 
-  // Split: main platforms + admin section
-  const main = sorted.filter(p => p !== 'meta')
-  const admin = sorted.filter(p => p === 'meta')
+  // Group: dashboard | afdelingen | tools | admin
+  const groups = [
+    sorted.filter(p => p === 'team'),
+    sorted.filter(p => ['acquisitie', 'assetmanagement', 'projectontwikkeling'].includes(p)),
+    sorted.filter(p => ['zorgplatform', 'ideeen'].includes(p)),
+    sorted.filter(p => p === 'meta')
+  ].filter(g => g.length > 0)
 
   let html = '<div class="platform-header">PPM Platforms</div><div class="platform-list">'
-  html += main.map(p => renderPlatformItem(p, currentPlatform)).join('')
-  if (admin.length) {
-    html += '<div class="platform-separator"></div>'
-    html += admin.map(p => renderPlatformItem(p, currentPlatform)).join('')
-  }
+  groups.forEach((group, i) => {
+    if (i > 0) html += '<div class="platform-separator"></div>'
+    html += group.map(p => renderPlatformItem(p, currentPlatform)).join('')
+  })
   html += '</div>'
   dropdown.innerHTML = html
 }
