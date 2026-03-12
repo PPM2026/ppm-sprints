@@ -4,6 +4,8 @@
  * Shared across all PPM platforms via sync-shared.sh.
  */
 
+import { logApiCost } from '../lib/cost-logger.js'
+
 const GROQ_URL = 'https://api.groq.com/openai/v1/audio/transcriptions'
 const DEFAULT_LOCAL_URL = 'http://localhost:8080/inference'
 
@@ -68,6 +70,7 @@ async function transcribeGroq(audioBlob, lang, apiKey) {
   }
 
   const text = await res.text()
+  logApiCost('groq_transcribe', { calls: 1 })
   return text.trim()
 }
 
