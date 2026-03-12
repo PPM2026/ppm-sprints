@@ -43,10 +43,10 @@ export function renderShell(config) {
 
   const sidebarHtml = sidebarItems.map(item => {
     if (item.type === 'separator') {
-      return `<div class="side-separator">${item.label || ''}</div>`
+      return `<div class="side-separator"><span class="side-label">${item.label || ''}</span></div>`
     }
     const cls = 'side-item' + (item.active ? ' active' : '') + (item.isBack ? ' back' : '')
-    return `<div class="${cls}" data-view="${item.key}"><ion-icon name="${item.icon}"></ion-icon>${item.label}</div>`
+    return `<div class="${cls}" data-view="${item.key}"><ion-icon name="${item.icon}"></ion-icon><span class="side-label">${item.label}</span></div>`
   }).join('')
 
   const exportBtn = showExport
@@ -77,6 +77,10 @@ export function renderShell(config) {
       </div>
       <div class="${sidebarClass}" id="${sidebarId}">
         ${sidebarHtml}
+        <div class="side-toggle" id="btn-sidebar-toggle">
+          <ion-icon name="chevron-back-outline"></ion-icon>
+          <span class="side-label">Inklappen</span>
+        </div>
       </div>
       <div class="${mainClass}" id="${mainId}">
         ${mainContent}
@@ -109,6 +113,22 @@ export function initShellEvents(config) {
  */
 export function handleShellClick(e, rootId) {
   if (handlePlatformSwitcherClick(e)) return true
+
+  if (e.target.closest('#btn-sidebar-toggle')) {
+    clearTimeout(_hoverTimer)
+    if (_sidebarPinned) {
+      // Currently pinned open → collapse
+      setSidebarCollapsed(rootId, true)
+    } else {
+      // Not pinned → pin open
+      const root = document.getElementById(rootId)
+      if (root?.classList.contains('sidebar-collapsed')) {
+        setSidebarCollapsed(rootId, false)
+      }
+      _sidebarPinned = true
+    }
+    return true
+  }
 
   if (e.target.closest('#btn-darkmode')) {
     const db = document.getElementById(rootId)
@@ -146,6 +166,56 @@ export function updateSidebarActive(sidebarId, activeView, extraMappings = {}) {
     const sv = s.dataset.view
     const isActive = sv === activeView || extraMappings[activeView] === sv
     s.classList.toggle('active', isActive)
+  })
+}
+
+/**
+ * Sidebar state: pinned means user manually expanded via toggle button.
+ * Hover-expand doesn't pin — sidebar collapses again on mouseleave.
+ */
+let _sidebarPinned = false
+let _hoverTimer = null
+
+/**
+ * Collapse or expand the sidebar.
+ */
+export function setSidebarCollapsed(rootId, collapsed) {
+  const root = document.getElementById(rootId)
+  if (!root) return
+  if (collapsed) _sidebarPinned = false
+  root.classList.toggle('sidebar-collapsed', collapsed)
+  const icon = document.querySelector('#btn-sidebar-toggle ion-icon')
+  if (icon) icon.setAttribute('name', collapsed ? 'chevron-forward-outline' : 'chevron-back-outline')
+  const label = document.querySelector('#btn-sidebar-toggle .side-label')
+  if (label) label.textContent = collapsed ? 'Uitklappen' : 'Inklappen'
+}
+
+/**
+ * Initialize sidebar: always starts collapsed.
+ * Hover temporarily expands (grid transition, content shifts).
+ * Toggle button pins/unpins the expanded state.
+ */
+export function initSidebarCollapse(rootId) {
+  setSidebarCollapsed(rootId, true)
+
+  const root = document.getElementById(rootId)
+  const sidebar = root?.querySelector('#btn-sidebar-toggle')?.parentElement
+  if (!sidebar) return
+
+  sidebar.addEventListener('mouseenter', () => {
+    clearTimeout(_hoverTimer)
+    if (root.classList.contains('sidebar-collapsed')) {
+      setSidebarCollapsed(rootId, false)
+      _sidebarPinned = false // hover doesn't pin
+    }
+  })
+
+  sidebar.addEventListener('mouseleave', () => {
+    _hoverTimer = setTimeout(() => {
+      if (!_sidebarPinned) {
+        setSidebarCollapsed(rootId, true)
+      }
+    }, 400)
   })
 }
 

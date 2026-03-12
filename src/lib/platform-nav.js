@@ -55,6 +55,9 @@ export function renderPlatformSwitcher(currentPlatform) {
   `
 }
 
+// Canonical display order for platform switcher
+const PLATFORM_ORDER = ['team', 'acquisitie', 'assetmanagement', 'projectontwikkeling', 'zorgplatform', 'ideeen', 'meta']
+
 export async function initPlatformSwitcher(currentPlatform) {
   const dropdown = document.getElementById('platform-dropdown')
   if (!dropdown) return
@@ -66,17 +69,33 @@ export async function initPlatformSwitcher(currentPlatform) {
     return
   }
 
-  dropdown.innerHTML = platforms.map(p => {
-    const cfg = PLATFORM_CONFIG[p]
-    const isCurrent = p === currentPlatform
-    return `
-      <a class="platform-item${isCurrent ? ' current' : ''}" data-platform="${p}" data-url="${cfg.url}" href="${isCurrent ? '#' : cfg.url}">
-        <ion-icon name="${cfg.icon}"></ion-icon>
-        <span>${cfg.label}</span>
-        ${isCurrent ? '<ion-icon name="checkmark-outline" class="platform-check"></ion-icon>' : ''}
-      </a>
-    `
-  }).join('')
+  // Sort by canonical order
+  const sorted = PLATFORM_ORDER.filter(p => platforms.includes(p))
+
+  // Split: main platforms + admin section
+  const main = sorted.filter(p => p !== 'meta')
+  const admin = sorted.filter(p => p === 'meta')
+
+  let html = '<div class="platform-header">PPM Platforms</div><div class="platform-list">'
+  html += main.map(p => renderPlatformItem(p, currentPlatform)).join('')
+  if (admin.length) {
+    html += '<div class="platform-separator"></div>'
+    html += admin.map(p => renderPlatformItem(p, currentPlatform)).join('')
+  }
+  html += '</div>'
+  dropdown.innerHTML = html
+}
+
+function renderPlatformItem(p, currentPlatform) {
+  const cfg = PLATFORM_CONFIG[p]
+  const isCurrent = p === currentPlatform
+  return `
+    <a class="platform-item${isCurrent ? ' current' : ''}" data-platform="${p}" data-url="${cfg.url}" href="${isCurrent ? '#' : cfg.url}">
+      <ion-icon name="${cfg.icon}"></ion-icon>
+      <span>${cfg.label}</span>
+      ${isCurrent ? '<ion-icon name="checkmark-outline" class="platform-check"></ion-icon>' : ''}
+    </a>
+  `
 }
 
 export function handlePlatformSwitcherClick(e) {

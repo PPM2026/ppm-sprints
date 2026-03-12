@@ -27,6 +27,16 @@ html, body { height: 100%; font-family: 'Inter', sans-serif; background: var(--b
   min-width: 200px; display: none;
 }
 .platform-dropdown.active { display: block; }
+.platform-header {
+  padding: 8px 10px 6px; font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--text-secondary); border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.platform-list { padding: 2px 0; }
+.platform-separator {
+  height: 1px; background: var(--border); margin: 4px 6px;
+}
 .platform-item {
   display: flex; align-items: center; gap: 8px; padding: 8px 10px;
   border-radius: 6px; font-size: 12px; color: var(--text-secondary); cursor: pointer;
